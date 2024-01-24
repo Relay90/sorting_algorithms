@@ -1,61 +1,76 @@
 #include "sort.h"
+#include <stdio.h>
 
 /**
- * sift_down - Repair the heap whose root element is at index start
- * @array: The array to sort
- * @size: The size of the array
- * @start: The root of the heap to repair
- * @end: The end index of the heap
+ * swap - utility function to swap to integers
+ * @a: integer a
+ * @b: integer b
  **/
-static void sift_down(int *array, size_t size, size_t start, size_t end)
+void swap(int *a, int *b)
 {
-	size_t root = start, child, swap;
-	int temp;
+	int t = *a;
 
-	while (2 * root + 1 <= end)
-	{
-		child = 2 * root + 1;
-		swap = root;
-
-		if (array[swap] < array[child])
-			swap = child;
-
-		if (child + 1 <= end && array[swap] < array[child + 1])
-			swap = child + 1;
-
-		if (swap == root)
-			return;
-
-		temp = array[root];
-		array[root] = array[swap];
-		array[swap] = temp;
-		root = swap;
-
-		print_array(array, size);
-	}
+	*a = *b;
+	*b = t;
 }
 
 /**
- * heap_sort - Sorts an array using the Heap sort algorithm
- * @array: The array to sort
- * @size: The size of the array
+ * maxHeapify - The main function to heapify a Max Heap. The function
+ * assumes that everything under given root (element at index idx)
+ * is already heapified
+ * @array: array
+ * @size: size of the array for print
+ * @index: the index of the current root element
+ * @n: size of the array to run
+ */
+void maxHeapify(int *array, size_t size, int index, size_t n)
+{
+	const int root = index;
+	const int left = 2 * index + 1;
+	const int right = 2 * index + 2;
+
+	int largest = root;
+
+	if (left < (int)n && array[left] > array[largest])
+		largest = left;
+
+	/**
+	 * see if right child of root exists and is greater than
+	 * the largest so far
+	 */
+	if (right < (int)n && array[right] > array[largest])
+		largest = right;
+
+	/* change root, if neede */
+
+	if (largest != root)
+	{
+		swap(&array[root], &array[largest]);
+		print_array(array, size);
+		maxHeapify(array, size, largest, n);
+	}
+}
+/**
+ * heap_sort -  The main function to sort an array of given size
+ * @array: array to sort
+ * @size: size of the array
  **/
 void heap_sort(int *array, size_t size)
 {
-	int temp;
+	int i;
 
-	if (!array || size < 2)
+	if (array == NULL || size < 2)
 		return;
 
-	for (int i = size / 2 - 1; i >= 0; i--)
-		sift_down(array, size, i, size - 1);
-	for (int end = size - 1; end > 0; end--)
-	{
-		temp = array[end];
-		array[end] = array[0];
-		array[0] = temp;
+	for (i = (size - 2) / 2; i >= 0; --i)
+		maxHeapify(array, size, i, size);
 
+	for (i = (size - 1); i > 0; --i)
+	{
+		swap(&array[0], &array[i]);
 		print_array(array, size);
-		sift_down(array, size, 0, end - 1);
+
+		/* Finally, heapify the root of tree.*/
+		maxHeapify(array, size, 0, i);
 	}
 }
